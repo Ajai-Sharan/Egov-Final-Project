@@ -43,21 +43,29 @@ public class UserUtil {
 
     public UserDetailResponse userCall(Object userRequest, StringBuilder uri) {
         String dobFormat = null;
-        if(uri.toString().contains(configs.getUserSearchEndpoint())  || uri.toString().contains(configs.getUserUpdateEndpoint()))
-            dobFormat=DOB_FORMAT_Y_M_D;
-        else if(uri.toString().contains(configs.getUserCreateEndpoint()))
+        if (uri.toString().contains(configs.getUserSearchEndpoint()) ||
+                uri.toString().contains(configs.getUserUpdateEndpoint())) {
+            dobFormat = DOB_FORMAT_Y_M_D;
+        } else if (uri.toString().contains(configs.getUserCreateEndpoint())) {
             dobFormat = DOB_FORMAT_D_M_Y;
-        try{
-            LinkedHashMap responseMap = (LinkedHashMap)serviceRequestRepository.fetchResult(uri, userRequest);
-            parseResponse(responseMap,dobFormat);
-            UserDetailResponse userDetailResponse = mapper.convertValue(responseMap,UserDetailResponse.class);
-            return userDetailResponse;
         }
-        catch(IllegalArgumentException  e)
-        {
-            throw new CustomException(ILLEGAL_ARGUMENT_EXCEPTION_CODE,OBJECTMAPPER_UNABLE_TO_CONVERT);
+
+        try {
+            LinkedHashMap responseMap = (LinkedHashMap) serviceRequestRepository.fetchResult(uri, userRequest);
+
+
+            if (responseMap == null || responseMap.isEmpty()) {
+                throw new CustomException("USER_SERVICE_ERROR", "User service returned an empty response.");
+            }
+
+            parseResponse(responseMap, dobFormat);
+            return mapper.convertValue(responseMap, UserDetailResponse.class);
+
+        } catch (IllegalArgumentException e) {
+            throw new CustomException("ILLEGAL_ARGUMENT_EXCEPTION", "ObjectMapper unable to convert response.");
         }
     }
+
 
 
     /**
